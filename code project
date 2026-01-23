@@ -1,0 +1,22 @@
+import time
+
+item = input("สิ่งของที่ต้องการในวันนี้: ")
+
+def countdown(total_seconds):
+    while total_seconds > 0:
+        minutes = total_seconds // 60
+        seconds = total_seconds % 60
+        print(f"เวลาที่เหลือ: {minutes:02d}:{seconds:02d}")
+        time.sleep(1)
+        total_seconds -= 1
+    print(f"อย่าลืม {item} นะ!")
+
+try:
+    minutes = int(input("ตั้งเวลากี่นาที: "))
+    seconds = int(input("ตั้งเวลากี่วินาที: "))
+
+    total_time = minutes * 60 + seconds
+    countdown(total_time)
+
+except ValueError:
+    print("กรุณาใส่ตัวเลขเท่านั้นนะ")
