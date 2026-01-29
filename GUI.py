@@ -1,0 +1,127 @@
+import tkinter as tk
+from tkinter import messagebox
+import sys
+
+# --------------------
+# เสียงเตือน
+# --------------------
+def play_sound():
+    try:
+        if sys.platform.startswith("win"):
+            import winsound
+            winsound.Beep(1000, 700)
+        else:
+            window.bell()
+    except:
+        pass
+
+# --------------------
+# ตัวแปรหลัก
+# --------------------
+total_seconds = 0
+running = False
+item = ""
+
+# --------------------
+# แปลง HH:MM:SS → วินาที
+# --------------------
+def parse_time(time_str):
+    parts = time_str.split(":")
+    if len(parts) != 3:
+        raise ValueError
+
+    h, m, s = map(int, parts)
+    if m >= 60 or s >= 60 or h < 0 or m < 0 or s < 0:
+        raise ValueError
+
+    return h * 3600 + m * 60 + s
+
+# --------------------
+# จับเวลา
+# --------------------
+def countdown():
+    global total_seconds, running
+
+    if running:
+        h = total_seconds // 3600
+        m = (total_seconds % 3600) // 60
+        s = total_seconds % 60
+
+        time_entry.delete(0, tk.END)
+        time_entry.insert(0, f"{h:02d}:{m:02d}:{s:02d}")
+
+        if total_seconds == 0:
+            running = False
+            play_sound()
+            messagebox.showinfo("หมดเวลา ⏰", f"อย่าลืม {item} นะ!")
+            return
+
+        total_seconds -= 1
+        window.after(1000, countdown)
+
+def start_timer():
+    global total_seconds, running, item
+    if not running:
+        try:
+            item = entry_item.get()
+            time_text = time_entry.get()
+            total_seconds = parse_time(time_text)
+
+            if total_seconds <= 0:
+                messagebox.showwarning("แจ้งเตือน", "กรุณาตั้งเวลาอย่างน้อย 1 วินาที")
+                return
+
+            running = True
+            countdown()
+        except:
+            messagebox.showerror(
+                "รูปแบบเวลาไม่ถูกต้อง",
+                "กรุณาใส่เวลาในรูปแบบ HH:MM:SS\nเช่น 01:30:00"
+            )
+
+def pause_timer():
+    global running
+    running = False
+
+def reset_timer():
+    global running, total_seconds
+    running = False
+    total_seconds = 0
+    time_entry.delete(0, tk.END)
+    time_entry.insert(0, "00:00:00")
+
+# --------------------
+# หน้าต่างหลัก
+# --------------------
+window = tk.Tk()
+window.title("Timer เตือนความจำ")
+window.geometry("400x360")
+
+# --------------------
+# ฟอนต์
+# --------------------
+font_title = ("Arial", 14)
+font_input = ("Arial", 36, "bold")
+font_button = ("Arial", 13)
+
+# --------------------
+# UI
+# --------------------
+tk.Label(window, text="สิ่งของที่ต้องการในวันนี้", font=font_title).pack(pady=5)
+entry_item = tk.Entry(window, font=("Arial", 13))
+entry_item.pack(pady=5)
+
+tk.Label(window, text="ตั้งเวลา (HH:MM:SS)", font=font_title).pack(pady=5)
+
+time_entry = tk.Entry(window, font=font_input, justify="center")
+time_entry.insert(0, "00:00:00")
+time_entry.pack(pady=15)
+
+tk.Button(window, text="▶️ เริ่ม", font=font_button, command=start_timer)\
+    .pack(fill="x", padx=50, pady=4)
+tk.Button(window, text="⏸ หยุด", font=font_button, command=pause_timer)\
+    .pack(fill="x", padx=50, pady=4)
+tk.Button(window, text="🔄 รีเซ็ต", font=font_button, command=reset_timer)\
+    .pack(fill="x", padx=50, pady=4)
+
+window.mainloop()
